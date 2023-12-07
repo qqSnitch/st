@@ -1,48 +1,266 @@
-// SERVER TCP 
-//#include <stdafx.h> 
-#include <iostream>  
-#include <winsock2.h> 
-#include <windows.h> 
-#include <string> 
-#pragma comment (lib, "Ws2_32.lib")  
-using namespace std;
-#define SRV_PORT 1234 // сервер знает свой порт
-#define BUF_SIZE 64  
-const string QUEST = "Who are you?\n";
-int main() {
-	char buff[1024];
-	if (WSAStartup(0x0202, (WSADATA*)&buff[0]))
-	{
-		cout << "Error WSAStartup \n" << WSAGetLastError();   // Ошибка!
-		return -1;
-	}
-	SOCKET s, s_new; // s - сокет сервера, s_new - сокет нового клиента
-	int from_len;
-	char buf[BUF_SIZE] = { 0 };
-	sockaddr_in sin, from_sin; // указывает адресс транспорта и порт для AF_INET
-	s = socket(AF_INET, SOCK_STREAM, 0); // создали сокет ()AF_INET- семейство адрессов семейства IPv4   подключается для поддерживания SOCK_STREAM
-	sin.sin_family = AF_INET; // семейство адресов для адреса транспорта AF_INET по умолч
-	sin.sin_addr.s_addr = 0;//структура IN_ADDR содержащий транспортный адрес IPv4
-	sin.sin_port = htons(SRV_PORT);//номер порта транспортного протокола   htons-преобразует в порядок байтов сети TCP
-	bind(s, (sockaddr*)&sin, sizeof(sin)); // добавляем установленную информацию сокету скрвера
-	string msg, msg1;
-	listen(s, 3); // создаем очередь для принятия 3-х клиентов
-	while (1) {
-		from_len = sizeof(from_sin);
-		s_new = accept(s, (sockaddr*)&from_sin, &from_len); // из очереди извлекает очередного клиента (from_sin - структура куда попадает инф о клиенте)
-		cout << "new connected client! " << endl;
-		msg = QUEST;
-		while (1) {
-			send(s_new, (char*)&msg[0], msg.size(), 0); // посылаем сообщение "Who are you?"
-			from_len = recv(s_new, (char*)buf, BUF_SIZE, 0);
-			buf[from_len] = 0;
-			msg1 = (string)buf;
-			cout << msg1 << endl;
-			if (msg1 == "Bye") break; // прерываю диалог с этим клиентом
-			getline(cin, msg);
-		}
-		cout << "client is lost";
-		closesocket(s_new); // разрываем связь с отключенным клиентом
-	}
-	return 0;
+package indiv3;
+import java.util.*;
+public class Main {
+    public static void main(String[]args)
+    {
+        Scanner sc=new Scanner(System.in);
+        Scanner scL = new Scanner(System.in);
+        TeacherSchool ts=new TeacherSchool();
+        System.out.println("Enter count of teacher: ");
+        int n=sc.nextInt();
+        for(int i=0;i<n;i++)
+        {
+            System.out.println("Name: ");
+            String name = scL.nextLine();
+            System.out.println("Adress: ");
+            String adress = scL.nextLine();
+            System.out.println("Subject: ");
+            String subject = scL.nextLine();
+            System.out.println("Count of subject per week: ");
+            int kol=sc.nextInt();
+            System.out.println("Experience: ");
+            int exp=sc.nextInt();
+            Teacher t=new Teacher(name,subject,adress,kol,exp);
+            ts.add(t);
+        }
+        System.out.println("0-End  1-Sort  2-Add  3-Delete 4-Find");
+        int mode=sc.nextInt();
+        while(mode!=0)
+        {
+            if(mode==1)
+            {
+                System.out.println("\n0-Name  1-Adress  2-Subject  3-Count  4-Experience");
+                int f=sc.nextInt();
+                if(f==0) {
+                   ts.sortByName();
+                   ts.print();
+                }
+                if(f==1) {
+                    ts.sortByAdress();
+                    ts.print();
+                }
+                if(f==2){
+                    ts.sortBySubject();
+                    ts.print();
+                }
+                if(f==3){
+                    ts.sortByKol();
+                    ts.print();
+                }
+                if(f==4){
+                    ts.sortByExperience();
+                    ts.print();
+                }
+            }
+            if(mode==2)
+            {
+                System.out.println("Name: ");
+                String name = scL.nextLine();
+                System.out.println("Adress: ");
+                String adress = scL.nextLine();
+                System.out.println("Subject: ");
+                String subject = scL.nextLine();
+                System.out.println("Count of subject per week: ");
+                int kol=sc.nextInt();
+                System.out.println("Experience: ");
+                int exp=sc.nextInt();
+                Teacher t=new Teacher(name,subject,adress,kol,exp);
+                ts.add(t);
+            }
+            if(mode==3)
+            {
+                System.out.println("Who delete by name?");
+                String a = scL.nextLine();
+                ts.delete(a);
+            }
+            if(mode==4)
+            {
+                System.out.println("Find subject: ");
+                String b = scL.nextLine();
+                ts.find(b);
+            }
+            System.out.println("0-End  1-Sort  2-Add  3-Delete  4-Find");
+            mode=sc.nextInt();
+        }
+        ts.print();
+
+    }
 }
+
+
+
+
+
+
+
+package indiv3;
+
+import java.util.Comparator;
+
+class Teacher implements Comparator<Teacher> {
+    String name,subject,adress;
+    int kol,experience;
+    Teacher(String name,String subject,String adress, int kol,int experience)
+    {
+        this.adress=adress;
+        this.name=name;
+        this.subject=subject;
+        this.kol=kol;
+        this.experience=experience;
+    }
+
+    Teacher() {
+
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
+
+    public String getAdress() {
+        return adress;
+    }
+
+    public void setAdress(String adress) {
+        this.adress = adress;
+    }
+
+    public int getKol() {
+        return kol;
+    }
+
+    public void setKol(int kol) {
+        this.kol = kol;
+    }
+
+    public int getExperience() {
+        return experience;
+    }
+
+    public void setExperience(int experience) {
+        this.experience = experience;
+    }
+    public String toString()
+    {
+        return "\nName: "+name+"\nAdress: "+ adress+"\nSubject: "+subject+"\nCount of subject per week: "+kol+"\nExperience: "+experience;
+    }
+    public static Comparator<Teacher>KolComporator=new Comparator<Teacher>()
+    {
+        public int compare(Teacher o1, Teacher o2) {
+            return o1.getKol()-o2.getKol();
+        }
+    };
+    public static Comparator<Teacher>ExpperienceComporator=new Comparator<Teacher>()
+    {
+        public int compare(Teacher o1, Teacher o2) {
+            return o1.getExperience()-o2.getExperience();
+        }
+    };
+    public static Comparator<Teacher>NameComporator=new Comparator<Teacher>()
+    {
+        public int compare(Teacher o1, Teacher o2) {
+            return o1.getName().compareTo(o2.getName());
+        }
+    };
+    public static Comparator<Teacher>AdressComporator=new Comparator<Teacher>()
+    {
+        public int compare(Teacher o1, Teacher o2) {
+            return o1.getAdress().compareTo(o2.getAdress());
+        }
+    };
+    public static Comparator<Teacher>SubjectComporator=new Comparator<Teacher>()
+    {
+        public int compare(Teacher o1, Teacher o2) {
+            return o1.getSubject().compareTo(o2.getSubject());
+        }
+    };
+    public int compare(Teacher o1, Teacher o2) {
+        return 0;
+    }
+}
+
+
+
+
+package indiv3;
+
+import java.util.*;
+public class TeacherSchool {
+    ArrayList<Teacher>a;
+    TeacherSchool()
+    {
+        a=new ArrayList<Teacher>();
+    }
+    void add(Teacher s)
+    {
+        a.add(s);
+    }
+    void delete(String name)
+    {
+        int p = -1;
+        for(int i = 0;i<a.size();i++){
+            if(name.equalsIgnoreCase(a.get(i).getName()))
+                p = i;
+        }
+        if(p>-1){
+            a.remove(p);
+            System.out.println("delete teacher:" + name);
+        }
+        else System.out.println("Teacher not found.");
+    }
+    void find(String subject)
+    {
+        boolean f=false;
+        for(int i=0;i<a.size();i++)
+        {
+            if(subject.equalsIgnoreCase(a.get(i).getSubject()))
+            {
+                f=true;
+                System.out.println(a.get(i).toString());
+            }
+        }
+        if(!f)
+        {
+            System.out.println("Teacher not found.");
+        }
+    }
+    void print()
+    {
+        for(int i = 0;i<a.size();i++){
+            System.out.println(a.get(i).toString());
+        }
+    }
+    void sortByKol(){
+        a.sort(Teacher.KolComporator);
+    }
+    void sortByExperience(){
+        a.sort(Teacher.ExpperienceComporator);
+    }
+    void sortByName(){
+        a.sort(Teacher.NameComporator);
+    }
+    void sortByAdress(){
+        a.sort(Teacher.AdressComporator);
+    }
+    void sortBySubject(){
+        a.sort(Teacher.SubjectComporator);
+    }
+
+
+
+
+}
+
+
