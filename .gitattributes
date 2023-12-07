@@ -1,53 +1,129 @@
-//#include <stdafx.h> // CLIENT TCP
-#include <iostream>  
-#define _WINSOCK_DEPRECATED_NO_WARNINGS  
-// подавление предупреждений библиотеки winsock2
-#include <winsock2.h> 
-#include <string>
-#include <windows.h>
-#pragma comment (lib, "Ws2_32.lib")
-#pragma warning(disable: 4996)  // подавление предупреждения 4996 
-using namespace std;
-#define SRV_HOST "localhost"  
-#define SRV_PORT 1234 
-#define CLNT_PORT 1235  
-#define BUF_SIZE 64 // размер буффера памяти для обмена сообщениями
-char TXT_ANSW[] = "I am your student\n";
-int main() {
-	char buff[1024]; // массив занимающий 1кб
-	if (WSAStartup(0x0202, (WSADATA*)&buff[0])) { // подключаем библиотеку версии ..
-		cout << "Error WSAStartup \n" << WSAGetLastError();  // Ошибка!
-		return -1;
-	}
-	SOCKET s; // указатель на сруктуру сокета
-	int from_len; // длина какой-то  там памяти
-	char buf[BUF_SIZE] = { 0 }; //
-	hostent* hp; // справочная структура какая-то..
-	sockaddr_in clnt_sin, srv_sin; // структура для инф сокета клиента и структура для инф сокета сервера
-	s = socket(AF_INET, SOCK_STREAM, 0); // 1 - домен, 2 - потоковое соеденение, 3 - 0 => tcp
-	clnt_sin.sin_family = AF_INET; // домен
-	clnt_sin.sin_addr.s_addr = 0; // кладем адрес текущего компьютера (значение 0 - автоматически заставляет определить его)
-	clnt_sin.sin_port = htons(CLNT_PORT); // задаем порт сокету
-	bind(s, (sockaddr*)&clnt_sin, sizeof(clnt_sin)); // кладет всю инф из clnr_sin в s
-	hp = gethostbyname(SRV_HOST); // получили хост сервера по имени
-	srv_sin.sin_port = htons(SRV_PORT); // помещаем порт
-	srv_sin.sin_family = AF_INET; // домен
-	((unsigned long*)&srv_sin.sin_addr)[0] =((unsigned long**)hp->h_addr_list)[0][0]; // поместили адремм
-	connect(s, (sockaddr*)&srv_sin, sizeof(srv_sin)); // клиент связывается с сервером
+package individ;
+import java.util.*;
 
-	// общение
-	string mst;
-	do {
-		from_len = recv(s, (char*)&buf, BUF_SIZE, 0); // ждет получения данных в буффер от сервера (2-ой параметр указывает куда сохр)
-		buf[from_len] = 0; // закрываем буффер с помощью 0
-		cout << buf << endl;
-		//send (s, (char *)&TXT_ANSW, sizeof(TXT_ANSW),0); 
-		getline(cin, mst); // считываем ответ клиента с клавиатуры
-		int msg_size = mst.size();
-		send(s, (char*)&mst[0], msg_size, 0); // посылаем ответ серверу
-	} while (mst != "Bye");
-	cout << "exit to infinity" << endl;
-	cin.get();    
-	closesocket(s);
-	return 0;
+class Predpriatie {
+    ArrayList<Predpr>a;
+    Predpriatie(){
+        a = new ArrayList<Predpr>();
+    }
+    void add(Predpr c){
+        a.add(c);
+    }
+    void del(String name){
+        int p = -1;
+        for(int i = 0;i<a.size();i++){
+            if(name.equalsIgnoreCase(a.get(i).getName()))
+                p = i;
+        }
+        if(p>-1){
+            a.remove(p);
+            System.out.println("delate sotrudnika:" + name);
+        }
+        else System.out.println("sotrudnika no");
+    }
+    void find(String otdel){
+        boolean f = false;
+        for(int i = 0;i<a.size();i++){
+            if(otdel.equalsIgnoreCase(a.get(i).getOtdel())){
+                f = true;
+                System.out.println(a.get(i).toString());
+            }
+        }
+        if(!f){
+            System.out.println("Sotrudnik not find");
+        }
+    }
+    void sortByOld(){
+        a.sort(Predpr.OldComparator);
+    }
+    void print(){
+        for(int i = 0;i<a.size();i++){
+            System.out.println(a.get(i).toString());
+        }
+    }
+}
+
+
+
+
+
+
+
+package individ;
+import java.util.*;
+
+class Predpr {
+    String name, otdel;
+    int old, kod;
+    Predpr(String name, int old, int kod, String otdel){
+        this.name = name;
+        this.old = old;
+        this.kod = kod;
+        this.otdel = otdel;
+    }
+    
+    String getName() {return name;}
+    int getOld() {return old;}
+    int getKod() {return kod;}
+    String getOtdel() {return otdel;}
+    
+    void setName(String name) {this.name = name;}
+    void setOld(int old) {this.old = old;}
+    void setKod(int kod) {this.kod = kod;}
+    void setOtdel(String otdel) {this.otdel = otdel;}
+    
+    public String toString(){
+        return "Name: " + name + "\n Old: " + old + "\n Kod: " + kod + "\n Otdel: " + otdel;
+    }
+    
+    public int compare(Predpr p1, Predpr p2){
+        return p1.getOld()-p2.getOld();
+    }
+    public static Comparator<Predpr> OldComparator = new Comparator <Predpr>(){
+        public int compare(Predpr p1,Predpr p2){
+            return p1.getName().compareTo(p2.getName());
+        }
+    };
+}
+
+
+
+
+
+
+package individ;
+import java.util.*;
+
+public class Individ {
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        Scanner scL = new Scanner(System.in);
+        Predpriatie pr = new Predpriatie();
+        System.out.println("Enter count sotrudnikov: ");
+        int n = sc.nextInt();
+        for(int i = 0;i<n;i++){
+            System.out.println("Name: ");
+            String name = scL.nextLine();
+            System.out.println("Old: ");
+            int old = sc.nextInt();
+            System.out.println("Kod sotrudnika: ");
+            int kod = sc.nextInt();
+            System.out.println("Otdel raboti: ");
+            String otdel = scL.nextLine();
+            Predpr p = new Predpr(name,old,kod,otdel);
+            pr.add(p);
+        }
+        System.out.println("Who delate?");
+        String f = scL.nextLine();
+        pr.del(f);
+        
+        System.out.println("Sort by old: ");
+        pr.sortByOld();
+        pr.print();
+        
+        System.out.println("Find by otdelu");
+        String otdels = scL.nextLine();
+        pr.find(otdels);
+    }
 }
